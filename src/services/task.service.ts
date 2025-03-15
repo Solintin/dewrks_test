@@ -1,13 +1,10 @@
 import TaskModel, { ITask, ITaskDocument } from "@src/db/model/task.model";
-import UserModel from "@src/db/model/user.model";
 import { BadRequestError } from "@src/errors";
 import { FilterQuery } from "mongoose";
 import BaseDocumentService from "./base.service";
 
-// ✅ Fix: Use `ITaskDocument` Instead of `ITask`
 class TaskService extends BaseDocumentService<ITaskDocument> {
   private TaskModel = TaskModel;
-  private UserModel = UserModel;
   constructor() {
     super("Task", TaskModel);
   }
@@ -25,7 +22,6 @@ class TaskService extends BaseDocumentService<ITaskDocument> {
           throw new BadRequestError("Task not found");
         }
 
-        // Ensure `statusTracker` is an array before pushing new status
         data.statusTracker = existingTask.statusTracker || [];
 
         if (data.status && data.status !== existingTask.status) {
@@ -45,7 +41,7 @@ class TaskService extends BaseDocumentService<ITaskDocument> {
           ...data,
           statusTracker: data.status
             ? [{ status: data.status, updateAt: Date.now() }]
-            : [], // Ensure it's an array
+            : [],
         });
 
         await task.save();

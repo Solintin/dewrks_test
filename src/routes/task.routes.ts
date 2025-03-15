@@ -1,9 +1,10 @@
-import VolunteerController from "@src/controllers/task.controller";
+import TaskController from "@src/controllers/task.controller";
 import { Router } from "express";
-import volunteerValidator from "@src/validations/task.validator";
+import TaskValidator from "@src/validations/task.validator";
 import systemMiddleware from "@src/middlewares/system.middleware";
+import AuthenticationMiddleware from "@src/middlewares/auth.middleware";
 
-class VolunteerRoutes extends VolunteerController {
+class TaskRoutes extends TaskController {
   public router: Router;
 
   constructor() {
@@ -17,26 +18,27 @@ class VolunteerRoutes extends VolunteerController {
 
     this.router.post(
       "/",
-      systemMiddleware.validateRequestBody(volunteerValidator.create),
+      systemMiddleware.validateRequestBody(TaskValidator.create),
+      AuthenticationMiddleware.validateUserAccess,
       this.create.bind(this)
     );
     this.router.patch(
-      "/:volunteerId",
-      systemMiddleware.validateParamId("volunteerId"),
-      systemMiddleware.validateRequestBody(volunteerValidator.update),
+      "/:taskId",
+      systemMiddleware.validateParamId("taskId"),
+      systemMiddleware.validateRequestBody(TaskValidator.update),
       this.update.bind(this)
     );
     this.router.delete(
-      "/:volunteerId",
-      systemMiddleware.validateParamId("volunteerId"),
+      "/:taskId",
+      systemMiddleware.validateParamId("taskId"),
       this.delete.bind(this)
     );
     this.router.get(
-      "/:volunteerId",
-      systemMiddleware.validateParamId("volunteerId"),
+      "/:taskId",
+      systemMiddleware.validateParamId("taskId"),
       this.get.bind(this)
     );
   }
 }
 
-export default new VolunteerRoutes().router;
+export default new TaskRoutes().router;

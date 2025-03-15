@@ -3,7 +3,8 @@ import { NotFoundError } from "@src/errors";
 import systemMiddleware from "@src/middlewares/system.middleware";
 import { Request, Response, Router } from "express";
 import os from "os";
-import volunteerRoutes from "./task.routes";
+import authRoutes from "./auth.routes";
+import taskRoutes from "./task.routes";
 
 class Routes {
   public router: Router;
@@ -20,7 +21,8 @@ class Routes {
     this.router.use(systemMiddleware.filterMiddleware);
 
     this.router.get("/", this.index);
-    this.router.use(`${this.apiVersion}/task`, volunteerRoutes);
+    this.router.use(`${this.apiVersion}/auth`, authRoutes);
+    this.router.use(`${this.apiVersion}/task`, taskRoutes);
 
     this.router.use("*", (req) => {
       throw new NotFoundError(

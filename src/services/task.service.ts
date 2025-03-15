@@ -13,32 +13,48 @@ class TaskService extends BaseDocumentService<ITaskDocument> {
   }
 
   public async saveOrUpdateTask(
-    data: Partial<ITask>, // Allow partial data for updates
-    filterQuery?: FilterQuery<ITaskDocument> // Optional filter for updates
+    data: Partial<ITask>,
+    filterQuery?: FilterQuery<ITaskDocument>
   ): Promise<ITaskDocument> {
-    // try {
-    let Task;
+    try {
+      let task;
 
-    if (filterQuery) {
-      const isExist = await this.TaskModel.findOne({
-        ...filterQuery,
-      });
-      if (!isExist) {
-        throw new BadRequestError("Task not found");
+      if (filterQuery) {
+        const existingTask = await this.TaskModel.findOne(filterQuery);
+        if (!existingTask) {
+          throw new BadRequestError("Task not found");
+        }
+
+        // Ensure `statusTracker` is an array before pushing new status
+        data.statusTracker = existingTask.statusTracker || [];
+
+        if (data.status && data.status !== existingTask.status) {
+          data.statusTracker.push({
+            status: data.status,
+            updateAt: Date.now(),
+          });
+        }
+
+        task = await this.TaskModel.findOneAndUpdate(filterQuery, data, {
+          new: true,
+          runValidators: true,
+          upsert: false,
+        });
+      } else {
+        task = new this.TaskModel({
+          ...data,
+          statusTracker: data.status
+            ? [{ status: data.status, updateAt: Date.now() }]
+            : [], // Ensure it's an array
+        });
+
+        await task.save();
       }
 
-      Task = await this.TaskModel.findOneAndUpdate(filterQuery, data, {
-        new: true, // Return updated document
-        runValidators: true, // Ensure validation
-      });
-    } else {
-      Task = new this.TaskModel(data);
-      await Task.save();
+      return task;
+    } catch (error) {
+      throw new BadRequestError("Error saving/updating task: " + error.message);
     }
-    return Task;
-    // } catch (error) {
-    //   throw new BadRequestError("Error:" + error);
-    // }
   }
 }
 

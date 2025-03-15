@@ -18,6 +18,12 @@ class AuthService extends BaseDocumentService<IUserDocument> {
     .toString();
 
   public async signUp(data: IUser): Promise<IUserDocument> {
+    const isExist = await this.UserModel.findOne({
+      email: data.email,
+    });
+    if (isExist) {
+      throw new BadRequestError("User already exist");
+    }
     const newUser = new this.UserModel({
       ...data,
     });

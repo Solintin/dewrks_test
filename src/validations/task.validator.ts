@@ -8,10 +8,7 @@ class VolunteerValidatorUtils extends BaseValidator {
   public create = (req: Request): ValidationResult => {
     const schema = Joi.object({
       title: Joi.string().trim().min(3).max(100).required(),
-      status: Joi.string()
-        .valid(...Object.values(status))
-        .required(),
-
+      status: Joi.string().valid(...Object.values(status)),
       description: Joi.string().trim().max(500).allow("").optional(),
     });
     return this.validate(schema, req.body);

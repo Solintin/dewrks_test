@@ -92,14 +92,37 @@ class taskController {
       Next(error);
     }
   }
+  public async overview(
+    req: IRequest,
+    res: Response,
+    Next: NextFunction
+  ): Promise<Response> {
+    const {
+      user: { _id: userId },
+    } = req;
+    try {
+      const task = await taskService.countByStatus(userId);
+      return res.status(200).json({
+        message: `Tasks Overview Successfully`,
+        data: task,
+      });
+    } catch (error) {
+      logger.log("error", `Error in fetching task controller method: ${error}`);
+      Next(error);
+    }
+  }
   public async index(
     req: IRequest,
     res: Response,
     Next: NextFunction
   ): Promise<Response> {
     try {
-      const { filters, pageOpt } = req;
-      const tasks = await taskService.getAll(filters, null, pageOpt);
+      const { filters, pageOpt, user } = req;
+      const tasks = await taskService.getAll(
+        { ...filters, user_id: user._id },
+        null,
+        pageOpt
+      );
       return res.status(200).json({
         message: `Tasks Retrieved Successfully`,
         data: tasks,

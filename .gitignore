@@ -103,7 +103,7 @@ typings/
 .tern-port
 
 # Secret key
-private.key
+# private.key
 service-account.json
 test.*
 

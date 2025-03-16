@@ -14,7 +14,16 @@ class TaskRoutes extends TaskController {
   }
 
   public routes() {
-    this.router.get("/", this.index.bind(this));
+    this.router.get(
+      "/",
+      AuthenticationMiddleware.validateUserAccess,
+      this.index.bind(this)
+    );
+    this.router.get(
+      "/overview",
+      AuthenticationMiddleware.validateUserAccess,
+      this.overview.bind(this)
+    );
 
     this.router.post(
       "/",
@@ -30,11 +39,13 @@ class TaskRoutes extends TaskController {
     );
     this.router.delete(
       "/:taskId",
+      AuthenticationMiddleware.validateUserAccess,
       systemMiddleware.validateParamId("taskId"),
       this.delete.bind(this)
     );
     this.router.get(
       "/:taskId",
+      AuthenticationMiddleware.validateUserAccess,
       systemMiddleware.validateParamId("taskId"),
       this.get.bind(this)
     );

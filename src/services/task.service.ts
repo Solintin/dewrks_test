@@ -1,6 +1,6 @@
 import TaskModel, { ITask, ITaskDocument } from "@src/db/model/task.model";
 import { BadRequestError } from "@src/errors";
-import { FilterQuery } from "mongoose";
+import mongoose, { FilterQuery } from "mongoose";
 import BaseDocumentService from "./base.service";
 
 class TaskService extends BaseDocumentService<ITaskDocument> {
@@ -50,6 +50,23 @@ class TaskService extends BaseDocumentService<ITaskDocument> {
       return task;
     } catch (error) {
       throw new BadRequestError("Error saving/updating task: " + error.message);
+    }
+  }
+  public async countByStatus(userId: string): Promise<ITaskDocument[]> {
+    try {
+      return this.TaskModel.aggregate([
+        {
+          $match: { user_id: new mongoose.Types.ObjectId(userId) },
+        },
+        {
+          $group: {
+            _id: "$status",
+            count: { $sum: 1 },
+          },
+        },
+      ]);
+    } catch (error) {
+      throw new BadRequestError("Error counting task: " + error.message);
     }
   }
 }

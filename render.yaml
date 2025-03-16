@@ -3,7 +3,7 @@ services:
     name: dwrks_test
     runtime: node
     buildCommand: npm install && npm run build
-    startCommand: npm start
+    startCommand: node dist/src/app.js
     envVars:
       - key: NODE_ENV
         value: production

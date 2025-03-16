@@ -11,8 +11,6 @@ class AuthController {
   ): Promise<Response> {
     try {
       const { body: signUpData } = req;
-      console.log(signUpData);
-      console.log(req);
 
       const user = await authService.signUp(signUpData);
       const data = await authService.login(user);

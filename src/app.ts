@@ -31,7 +31,7 @@ class App {
 
     logger.info("⏳ Setting up middlewares...");
     this.initializeMiddlewaresAndRoutes();
-    logger.info("✅ Middlewares set up!");
+    logger.info("✅ Middleware set up!");
 
     this.setupProcessSignals();
   }

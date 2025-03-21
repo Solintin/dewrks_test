@@ -14,44 +14,56 @@ class TaskService extends BaseDocumentService<ITaskDocument> {
     filterQuery?: FilterQuery<ITaskDocument>
   ): Promise<ITaskDocument> {
     try {
-      let task;
-
       if (filterQuery) {
-        const existingTask = await this.TaskModel.findOne(filterQuery);
-        if (!existingTask) {
-          throw new BadRequestError("Task not found");
-        }
-
-        data.statusTracker = existingTask.statusTracker || [];
-
-        if (data.status && data.status !== existingTask.status) {
-          data.statusTracker.push({
-            status: data.status,
-            updateAt: Date.now(),
-          });
-        }
-
-        task = await this.TaskModel.findOneAndUpdate(filterQuery, data, {
-          new: true,
-          runValidators: true,
-          upsert: false,
-        });
-      } else {
-        task = new this.TaskModel({
-          ...data,
-          statusTracker: data.status
-            ? [{ status: data.status, updateAt: Date.now() }]
-            : [],
-        });
-
-        await task.save();
+        return await this.updateExistingTask(filterQuery, data);
       }
-
-      return task;
+      return await this.createNewTask(data);
     } catch (error) {
-      throw new BadRequestError("Error saving/updating task: " + error.message);
+      throw new BadRequestError(
+        `Error ${filterQuery ? 'updating' : 'creating'} task: ${error.message}`
+      );
     }
   }
+
+  private async updateExistingTask(
+    filterQuery: FilterQuery<ITaskDocument>,
+    data: Partial<ITask>
+  ): Promise<ITaskDocument> {
+    const existingTask = await this.TaskModel.findOne(filterQuery);
+    if (!existingTask) {
+      throw new BadRequestError("Task not found");
+    }
+
+    const statusTracker = existingTask.statusTracker || [];
+    if (data.status && data.status !== existingTask.status) {
+      statusTracker.push({
+        status: data.status,
+        updateAt: Date.now(),
+      });
+    }
+
+    return await this.TaskModel.findOneAndUpdate(
+      filterQuery,
+      { ...data, statusTracker },
+      {
+        new: true,
+        runValidators: true,
+        upsert: false,
+      }
+    );
+  }
+
+  private async createNewTask(data: Partial<ITask>): Promise<ITaskDocument> {
+    const task = new this.TaskModel({
+      ...data,
+      statusTracker: data.status
+        ? [{ status: data.status, updateAt: Date.now() }]
+        : [],
+    });
+
+    return await task.save();
+  }
+
   public async countByStatus(userId: string): Promise<ITaskDocument[]> {
     try {
       return this.TaskModel.aggregate([
